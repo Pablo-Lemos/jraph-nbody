@@ -1,4 +1,4 @@
-from main import *
+from helper_functions import *
 
 
 def force_newton(edge, sender_node, receiver_node, globals_):
@@ -48,11 +48,11 @@ class Simulator:
         self.graph = self.net2(self.graph)
         self.graph = self.net3(self.graph)
 
-    def simulate(self, nsteps, dt):
+    def simulate(self, nSteps, dt):
         self.dt = dt
-        X = jnp.zeros([nsteps, self.nParticles, 3])
-        V = jnp.zeros([nsteps, self.nParticles, 3])
-        for i in range(nsteps):
+        X = jnp.zeros([nSteps, self.nParticles, 3])
+        V = jnp.zeros([nSteps, self.nParticles, 3])
+        for i in range(nSteps):
             X = X.at[i].set(self.graph.nodes[:, 1:4])
             V = V.at[i].set(self.graph.nodes[:, 4:])
             self.forward_step()

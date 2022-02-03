@@ -11,11 +11,21 @@ def get_receivers_senders(nx):
     return jnp.tril_indices(nx, k=-1)
 
 
-def numpy_to_graph(X, V):
+def numpy_to_graph(X, V, masses = None):
     nx = X.shape[0]
     receivers, senders = get_receivers_senders(nx)
     edges = get_distances(X)
-    masses = jnp.ones(nx)
+
+    if masses is None:
+        # Default all masses to one
+        masses = jnp.ones(nx)
+    elif isinstance(masses, (int, long, float)):
+        masses = masses*jnp.ones(nx)
+    else:
+        assert len(masses) == nx, 'Wrong size for masses'
+        assert isinstance(masses, jax.numpy.ndarray), "Masses must be a jax " \
+                                                      "array"
+
     nodes = jnp.concatenate([masses.reshape([-1, 1]), X, V], axis=1)
     graph = jraph.GraphsTuple(nodes=nodes, senders=senders, receivers=receivers,
                               edges=edges, n_node=nx, n_edge=nx*(nx+1)//2, globals=None)
@@ -28,14 +38,3 @@ def update_edge_dummy(edge, sender_node, receiver_node, globals_):
 
 def update_node_dummy(node, sender, receiver, globals_):
     return node
-
-
-if __name__ == "__main__":
-    import jax.random as jrnd
-    seed = 0
-    key = jrnd.PRNGKey(seed)
-
-    # Create a simple graph with two bodies (one distance)
-    X = jrnd.uniform(key, [2, 3])
-    V = jnp.zeros([2, 3])
-    print(numpy_to_graph(X, V))
