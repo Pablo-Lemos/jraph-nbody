@@ -1,29 +1,36 @@
 from main import *
 
+
 def force_newton(edge, sender_node, receiver_node, globals_):
     """Returns the update edge features."""
-    return sender_node[:, :1] * receiver_node[:, :1] * edge / jnp.linalg.norm(edge, axis=-1, keepdims=True)
+    return sender_node[:, :1] * receiver_node[:, :1] * edge / jnp.linalg.norm(
+        edge, axis=-1, keepdims=True)
+
 
 class Simulator:
     def __init__(self, x0, v0, force):
         # Initial position and velocity
-        self.nparticles = x0.shape[0]
+        self.nParticles = x0.shape[0]
         self.graph = numpy_to_graph(x0, v0)
         self.force = force
+        self.dt = None
+        self.net = None
+        self.net2 = None
+        self.net3 = None
 
     def create_nets(self):
         self.net = jraph.GraphNetwork(update_edge_fn=self.force,
-                                 update_node_fn=update_node_dummy, )
+                                      update_node_fn=update_node_dummy, )
 
         self.net2 = jraph.GraphNetwork(update_edge_fn=update_edge_dummy,
-                                  update_node_fn=self.get_velocity_position, )
+                                       update_node_fn=self.get_velocity_position, )
 
         self.net3 = jraph.GraphNetwork(update_edge_fn=self.get_distance,
-                                  update_node_fn=update_node_dummy, )
+                                       update_node_fn=update_node_dummy, )
 
     def get_velocity_position(self, node, sender, receiver, globals_):
-        sumforces = sender - receiver
-        a = sumforces / node[:, :1]
+        sumForces = sender - receiver
+        a = sumForces / node[:, :1]
         dv = a * self.dt
         node = node.at[:, 4:].set(node[:, 4:] + dv)
         node = node.at[:, 1:4].set(node[:, 1:4] + node[:, 4:] * self.dt)
@@ -33,25 +40,21 @@ class Simulator:
         return receiver_node[:, 1:4] - sender_node[:, 1:4]
 
     def forward_step(self):
-
-        try:
-            self.graph = self.net(self.graph)
-            self.graph = self.net2(self.graph)
-            self.graph = self.net3(self.graph)
-        except:
+        if self.net is None:
             # On first step, create the nets
             self.create_nets()
-            self.graph = self.net(self.graph)
-            self.graph = self.net2(self.graph)
-            self.graph = self.net3(self.graph)
+
+        self.graph = self.net(self.graph)
+        self.graph = self.net2(self.graph)
+        self.graph = self.net3(self.graph)
 
     def simulate(self, nsteps, dt):
         self.dt = dt
-        X = jnp.zeros([nsteps, self.nparticles, 3])
-        V = jnp.zeros([nsteps, self.nparticles, 3])
+        X = jnp.zeros([nsteps, self.nParticles, 3])
+        V = jnp.zeros([nsteps, self.nParticles, 3])
         for i in range(nsteps):
-            X = X.at[i].set(self.graph.nodes[:,1:4])
-            V = V.at[i].set(self.graph.nodes[:,4:])
+            X = X.at[i].set(self.graph.nodes[:, 1:4])
+            V = V.at[i].set(self.graph.nodes[:, 4:])
             self.forward_step()
         return X, V
 
@@ -67,4 +70,4 @@ if __name__ == "__main__":
     V0 = jnp.zeros([2, 3])
 
     S = Simulator(X0, V0, force_newton)
-    X, V = S.simulate(nsteps = 10, dt = 0.1)
+    X, V = S.simulate(nsteps=10, dt=0.1)

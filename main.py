@@ -1,12 +1,15 @@
 import jraph
 import jax.numpy as jnp
 
+
 def get_distances(X):
     nx = X.shape[0]
     return (X[:, None, :] - X[None, :, :])[jnp.tril_indices(nx, k=-1)]
 
+
 def get_receivers_senders(nx):
     return jnp.tril_indices(nx, k=-1)
+
 
 def numpy_to_graph(X, V):
     nx = X.shape[0]
@@ -22,8 +25,10 @@ def numpy_to_graph(X, V):
 def update_edge_dummy(edge, sender_node, receiver_node, globals_):
     return edge
 
+
 def update_node_dummy(node, sender, receiver, globals_):
     return node
+
 
 if __name__ == "__main__":
     import jax.random as jrnd
