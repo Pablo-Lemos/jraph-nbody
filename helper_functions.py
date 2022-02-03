@@ -19,11 +19,11 @@ def numpy_to_graph(X, V, masses = None):
     if masses is None:
         # Default all masses to one
         masses = jnp.ones(nx)
-    elif isinstance(masses, (int, long, float)):
+    elif isinstance(masses, (int, float)):
         masses = masses*jnp.ones(nx)
     else:
         assert len(masses) == nx, 'Wrong size for masses'
-        assert isinstance(masses, jax.numpy.ndarray), "Masses must be a jax " \
+        assert isinstance(masses, jnp.ndarray), "Masses must be a jax " \
                                                       "array"
 
     nodes = jnp.concatenate([masses.reshape([-1, 1]), X, V], axis=1)

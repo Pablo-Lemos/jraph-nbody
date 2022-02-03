@@ -8,10 +8,10 @@ def force_newton(edge, sender_node, receiver_node, globals_):
 
 
 class Simulator:
-    def __init__(self, x0, v0, force):
+    def __init__(self, x0, v0, force, masses = None):
         # Initial position and velocity
         self.nParticles = x0.shape[0]
-        self.graph = numpy_to_graph(x0, v0)
+        self.graph = numpy_to_graph(x0, v0, masses)
         self.force = force
         self.dt = None
         self.net = None
