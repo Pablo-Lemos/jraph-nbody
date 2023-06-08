@@ -4,7 +4,7 @@ from helper_functions import *
 def force_newton(edge, sender_node, receiver_node, globals_):
     """Returns the update edge features."""
     return sender_node[:, :1] * receiver_node[:, :1] * edge / jnp.linalg.norm(
-        edge, axis=-1, keepdims=True)
+        edge, axis=-1, keepdims=True) ** 3
 
 
 class Simulator:
@@ -70,4 +70,4 @@ if __name__ == "__main__":
     V0 = jnp.zeros([2, 3])
 
     S = Simulator(X0, V0, force_newton)
-    X, V = S.simulate(nsteps=10, dt=0.1)
+    X, V = S.simulate(nSteps=10, dt=0.1)
